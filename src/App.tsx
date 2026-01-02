@@ -1,14 +1,44 @@
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import Login from './pages/Login';
+import Dashboard from './pages/Dashboard';
+
+// Protected Route Component
+const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
+  const { session } = useAuth();
+  if (!session) {
+    return <Navigate to="/" replace />;
+  }
+  return children;
+};
+
+// Public Route (redirects to dashboard if already logged in)
+const PublicRoute = ({ children }: { children: JSX.Element }) => {
+  const { session } = useAuth();
+  if (session) {
+    return <Navigate to="/dashboard" replace />;
+  }
+  return children;
+};
+
 function App() {
-    return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-100">
-            <div className="text-center">
-                <h1 className="text-4xl font-bold mb-6 text-gray-800">Sistema Generador de Certificados</h1>
-                <button className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded shadow-lg transition duration-300">
-                    Botón de Prueba Tailwind
-                </button>
-            </div>
-        </div>
-    )
+  return (
+    <AuthProvider>
+      <Router>
+        <Routes>
+          <Route path="/" element={<PublicRoute><Login /></PublicRoute>} />
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      </Router>
+    </AuthProvider>
+  );
 }
 
-export default App
+export default App;
