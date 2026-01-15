@@ -30,14 +30,33 @@ export default function Dashboard() {
       const response = await fetch('http://localhost:3000/api/certificates', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify(formData)
       });
 
       if (response.ok) {
-        alert('Certificado guardado con éxito');
+        // Convertir la respuesta a Blob
+        const blob = await response.blob();
+
+        // Crear URL temporal
+        const url = window.URL.createObjectURL(blob);
+
+        // Crear enlace invisible para descargar
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `certificado_${formData.student_name.replace(/\s+/g, '_')}.pdf`);
+        document.body.appendChild(link);
+
+        // Forzar clic
+        link.click();
+
+        // Limpiar
+        link.parentNode?.removeChild(link);
+        window.URL.revokeObjectURL(url);
+
+        alert('Certificado generado y descargado con éxito');
         setFormData({ student_name: '', course_level: '', completion_date: '' });
       } else {
         const errorData = await response.json();
@@ -119,8 +138,8 @@ export default function Dashboard() {
               type="submit"
               disabled={loading}
               className={`w-full font-bold py-2 px-4 rounded transition duration-300 ${loading
-                  ? 'bg-gray-400 cursor-not-allowed'
-                  : 'bg-blue-600 hover:bg-blue-700 text-white'
+                ? 'bg-gray-400 cursor-not-allowed'
+                : 'bg-blue-600 hover:bg-blue-700 text-white'
                 }`}
             >
               {loading ? 'Guardando...' : 'Generar Certificado'}
