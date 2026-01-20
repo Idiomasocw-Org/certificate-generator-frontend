@@ -5,9 +5,9 @@ import { supabase } from '../lib/supabase';
 export default function Dashboard() {
   const { user, signOut } = useAuth();
   const [formData, setFormData] = useState({
-    student_name: '',
-    course_level: '',
-    completion_date: ''
+    studentName: '',
+    level: '',
+    date: ''
   });
   const [loading, setLoading] = useState(false);
 
@@ -46,7 +46,7 @@ export default function Dashboard() {
         // Crear enlace invisible para descargar
         const link = document.createElement('a');
         link.href = url;
-        link.setAttribute('download', `certificado_${formData.student_name.replace(/\s+/g, '_')}.pdf`);
+        link.setAttribute('download', `certificado_${formData.studentName.replace(/\s+/g, '_')}.pdf`);
         document.body.appendChild(link);
 
         // Forzar clic
@@ -57,7 +57,7 @@ export default function Dashboard() {
         window.URL.revokeObjectURL(url);
 
         alert('Certificado generado y descargado con éxito');
-        setFormData({ student_name: '', course_level: '', completion_date: '' });
+        setFormData({ studentName: '', level: '', date: '' });
       } else {
         const errorData = await response.json();
         alert(`Error: ${errorData.error || 'Failed to create certificate'}`);
@@ -97,8 +97,8 @@ export default function Dashboard() {
               <label className="block text-sm font-medium text-gray-700 mb-1">Nombre del Estudiante</label>
               <input
                 type="text"
-                name="student_name"
-                value={formData.student_name}
+                name="studentName"
+                value={formData.studentName}
                 onChange={handleChange}
                 required
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -109,8 +109,8 @@ export default function Dashboard() {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Nivel del Curso</label>
               <select
-                name="course_level"
-                value={formData.course_level}
+                name="level"
+                value={formData.level}
                 onChange={handleChange}
                 required
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -126,8 +126,8 @@ export default function Dashboard() {
               <label className="block text-sm font-medium text-gray-700 mb-1">Fecha de Finalización</label>
               <input
                 type="date"
-                name="completion_date"
-                value={formData.completion_date}
+                name="date"
+                value={formData.date}
                 onChange={handleChange}
                 required
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
