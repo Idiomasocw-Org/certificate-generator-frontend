@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
+import CertificateHistory from '../components/CertificateHistory';
 
 export default function Dashboard() {
   const { user, signOut } = useAuth();
@@ -10,6 +11,7 @@ export default function Dashboard() {
     date: ''
   });
   const [loading, setLoading] = useState(false);
+  const [refreshHistory, setRefreshHistory] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -58,6 +60,7 @@ export default function Dashboard() {
 
         alert('Certificado generado y descargado con éxito');
         setFormData({ studentName: '', level: '', date: '' });
+        setRefreshHistory(prev => !prev);
       } else {
         const errorData = await response.json();
         alert(`Error: ${errorData.error || 'Failed to create certificate'}`);
@@ -146,6 +149,8 @@ export default function Dashboard() {
             </button>
           </form>
         </div>
+
+        <CertificateHistory refreshHistory={refreshHistory} />
       </div>
     </div>
   );
