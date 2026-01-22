@@ -10,7 +10,8 @@ export default function Dashboard() {
     level: '',
     date: ''
   });
-  const [loading, setLoading] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [refreshHistory, setRefreshHistory] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -20,7 +21,8 @@ export default function Dashboard() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    setIsGenerating(true);
+    setError(null);
 
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -63,13 +65,13 @@ export default function Dashboard() {
         setRefreshHistory(prev => !prev);
       } else {
         const errorData = await response.json();
-        alert(`Error: ${errorData.error || 'Failed to create certificate'}`);
+        setError(errorData.error || 'Error al generar el certificado');
       }
     } catch (error: any) {
       console.error('Error submitting form:', error);
-      alert('Error al conectar con el servidor');
+      setError('Error al conectar con el servidor');
     } finally {
-      setLoading(false);
+      setIsGenerating(false);
     }
   };
 
@@ -95,6 +97,14 @@ export default function Dashboard() {
 
         <div className="bg-white rounded-lg shadow p-6">
           <h3 className="text-lg font-bold mb-4 text-gray-700">Generar Certificado</h3>
+
+          {error && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+              <strong className="font-bold">Error: </strong>
+              <span className="block sm:inline">{error}</span>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Nombre del Estudiante</label>
@@ -139,13 +149,13 @@ export default function Dashboard() {
 
             <button
               type="submit"
-              disabled={loading}
-              className={`w-full font-bold py-2 px-4 rounded transition duration-300 ${loading
+              disabled={isGenerating}
+              className={`w-full font-bold py-2 px-4 rounded transition duration-300 ${isGenerating
                 ? 'bg-gray-400 cursor-not-allowed'
                 : 'bg-blue-600 hover:bg-blue-700 text-white'
                 }`}
             >
-              {loading ? 'Guardando...' : 'Generar Certificado'}
+              {isGenerating ? 'Generando...' : 'Generar Certificado'}
             </button>
           </form>
         </div>
