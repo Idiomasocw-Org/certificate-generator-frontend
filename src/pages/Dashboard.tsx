@@ -3,6 +3,9 @@ import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import CertificateHistory from '../components/CertificateHistory';
 
+const ADMIN_EMAIL = 'barbaraarias844@gmail.com';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
 export default function Dashboard() {
   const { user, signOut } = useAuth();
   const [formData, setFormData] = useState({
@@ -31,7 +34,7 @@ export default function Dashboard() {
         throw new Error('No valid session found');
       }
 
-      const response = await fetch('http://localhost:3000/api/certificates', {
+      const response = await fetch(`${API_URL}/api/certificates`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${session.access_token}`,
