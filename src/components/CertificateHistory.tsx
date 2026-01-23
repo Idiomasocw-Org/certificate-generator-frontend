@@ -14,6 +14,7 @@ interface Props {
 }
 
 export default function CertificateHistory({ refreshHistory }: Props) {
+    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
     const [certificates, setCertificates] = useState<Certificate[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -23,7 +24,7 @@ export default function CertificateHistory({ refreshHistory }: Props) {
             const { data: { session } } = await supabase.auth.getSession();
             if (!session?.access_token) return;
 
-            const response = await fetch('http://localhost:3000/api/certificates', {
+            const response = await fetch(`${API_URL}/api/certificates`, {
                 headers: {
                     'Authorization': `Bearer ${session.access_token}`
                 }
