@@ -3,7 +3,6 @@ import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import CertificateHistory from '../components/CertificateHistory';
 
-const ADMIN_EMAIL = 'barbaraarias844@gmail.com';
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 export default function Dashboard() {
@@ -50,10 +49,11 @@ export default function Dashboard() {
         // Crear URL temporal
         const url = window.URL.createObjectURL(blob);
 
-        // Crear enlace invisible para descargar
+        // Crear enlace invisible para descargar con extensión .pdf asegurada
         const link = document.createElement('a');
         link.href = url;
-        link.setAttribute('download', `certificado_${formData.studentName.replace(/\s+/g, '_')}.pdf`);
+        const safeName = formData.studentName.trim().replace(/\s+/g, '_') || 'certificado';
+        link.setAttribute('download', `${safeName}.pdf`);
         document.body.appendChild(link);
 
         // Forzar clic
@@ -132,9 +132,11 @@ export default function Dashboard() {
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">Seleccione un nivel</option>
-                <option value="Básico">Básico</option>
-                <option value="Intermedio">Intermedio</option>
-                <option value="Avanzado">Avanzado</option>
+                <option value="A1">Nivel A1 (Acceso)</option>
+                <option value="A2">Nivel A2 (Plataforma)</option>
+                <option value="B1">Nivel B1 (Umbral)</option>
+                <option value="B2">Nivel B2 (Avanzado)</option>
+                <option value="C1">Nivel C1 (Dominio)</option>
               </select>
             </div>
 
