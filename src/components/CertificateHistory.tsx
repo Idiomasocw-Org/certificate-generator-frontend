@@ -45,34 +45,71 @@ export default function CertificateHistory({ refreshHistory }: Props) {
         fetchHistory();
     }, [refreshHistory]);
 
-    if (loading) return <div className="text-center py-4">Cargando historial...</div>;
+    if (loading) return (
+        <div className="flex flex-col items-center justify-center py-12 space-y-4">
+            <div className="w-8 h-8 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
+            <p className="text-slate-500 text-sm animate-pulse">Cargando registros...</p>
+        </div>
+    );
 
     return (
-        <div className="bg-white rounded-lg shadow overflow-hidden mt-8">
-            <div className="px-6 py-4 border-b border-gray-200">
-                <h3 className="text-lg font-bold text-gray-700">Historial de Certificados</h3>
+        <div className="overflow-hidden mt-4">
+            <div className="flex items-center justify-between mb-8">
+                <div>
+                    <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                        <History className="text-indigo-400 w-5 h-5" />
+                        Historial de Emisiones
+                    </h3>
+                    <p className="text-slate-500 text-xs mt-1 uppercase tracking-widest font-medium">Registros guardados en Supabase</p>
+                </div>
+                <div className="bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/20 text-blue-400 text-[10px] font-bold">
+                    {certificates.length} TOTAL
+                </div>
             </div>
-            <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                        <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estudiante</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nivel</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha de Emisión</th>
+
+            <div className="overflow-x-auto custom-scrollbar">
+                <table className="min-w-full">
+                    <thead>
+                        <tr className="border-b border-white/5">
+                            <th className="pb-4 text-left text-[10px] font-bold text-slate-500 uppercase tracking-widest">Estudiante</th>
+                            <th className="pb-4 text-left text-[10px] font-bold text-slate-500 uppercase tracking-widest">Nivel</th>
+                            <th className="pb-4 text-left text-[10px] font-bold text-slate-500 uppercase tracking-widest">Emisión</th>
                         </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="divide-y divide-white/5">
                         {certificates.length === 0 ? (
                             <tr>
-                                <td colSpan={3} className="px-6 py-4 text-center text-gray-500">No hay certificados generados aún</td>
+                                <td colSpan={3} className="py-12 text-center">
+                                    <div className="flex flex-col items-center opacity-20">
+                                        <FileText size={48} className="mb-2" />
+                                        <p className="text-sm font-medium">No hay certificados generados aún</p>
+                                    </div>
+                                </td>
                             </tr>
                         ) : (
                             certificates.map((cert) => (
-                                <tr key={cert.id} className="hover:bg-gray-50 transition-colors">
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{cert.student_name}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{cert.course_level}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        {new Date(cert.completion_date).toLocaleDateString()}
+                                <tr key={cert.id} className="group hover:bg-white/[0.02] transition-colors">
+                                    <td className="py-4 pr-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-400 font-bold text-xs">
+                                                {cert.student_name.charAt(0)}
+                                            </div>
+                                            <span className="text-sm font-medium text-slate-200 group-hover:text-white transition-colors">
+                                                {cert.student_name}
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td className="py-4 px-4 whitespace-nowrap">
+                                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                                            {cert.course_level}
+                                        </span>
+                                    </td>
+                                    <td className="py-4 pl-4 whitespace-nowrap text-xs text-slate-500">
+                                        {new Date(cert.completion_date).toLocaleDateString('es-ES', {
+                                            day: '2-digit',
+                                            month: 'short',
+                                            year: 'numeric'
+                                        })}
                                     </td>
                                 </tr>
                             ))
@@ -83,3 +120,6 @@ export default function CertificateHistory({ refreshHistory }: Props) {
         </div>
     );
 }
+
+// Re-using same icons to avoid extra imports if possible, or just add them
+import { History, FileText } from 'lucide-react';

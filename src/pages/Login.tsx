@@ -55,9 +55,9 @@ export default function Login() {
           <div className="bg-blue-600 p-3 rounded-2xl shadow-lg shadow-blue-600/20 mb-4">
             <GraduationCap className="text-white w-8 h-8" />
           </div>
-          <h1 className="text-3xl font-bold italic tracking-tight">CertiPro</h1>
-          <p className="text-slate-400 mt-2">
-            {isSignUp ? 'Crea una cuenta para guardar tus certificados' : 'Ingresa para acceder a tu historial'}
+          <h1 className="text-3xl font-bold italic tracking-tight">Portal Docente</h1>
+          <p className="text-slate-400 mt-2 text-center">
+            {isSignUp ? 'Registra tu cuenta de profesor para emitir certificados' : 'Ingresa para gestionar las certificaciones de tus alumnos'}
           </p>
         </div>
 
