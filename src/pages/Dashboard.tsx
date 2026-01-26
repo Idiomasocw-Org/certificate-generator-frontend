@@ -16,6 +16,13 @@ export default function Dashboard() {
   const [error, setError] = useState<string | null>(null);
   const [refreshHistory, setRefreshHistory] = useState(false);
 
+  // Limpiar rastro viejo de LocalStorage si existe (migración a Cookies)
+  useState(() => {
+    Object.keys(localStorage).forEach(key => {
+      if (key.startsWith('sb-')) localStorage.removeItem(key);
+    });
+  });
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
