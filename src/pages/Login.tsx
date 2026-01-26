@@ -11,41 +11,55 @@ export default function Login() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('🚀 Login: Attempting login for', email);
     setLoading(true);
     setError(null);
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-    if (error) {
-      setError(error.message);
+      if (error) {
+        console.error('❌ Login error:', error.message);
+        setError(error.message);
+        setLoading(false);
+      } else {
+        console.log('✅ Login success');
+        navigate('/dashboard');
+      }
+    } catch (err: any) {
+      console.error('❌ Login catch:', err);
+      setError('Ocurrió un error inesperado al intentar iniciar sesión.');
       setLoading(false);
-    } else {
-      // AuthStateChange in Context will handle the redirect, 
-      // but we can also force it here or let the user enter.
-      // We'll rely on the protected route logic in App.tsx mainly, 
-      // but navigating explicitly is safe.
-      navigate('/dashboard');
     }
   };
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('🚀 Login: Attempting signup for', email);
     setLoading(true);
     setError(null);
 
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-    });
+    try {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+      });
 
-    if (error) {
-      setError(error.message);
-      setLoading(false);
-    } else {
-      alert('Usuario creado con éxito. Ya puedes ingresar.');
+      if (error) {
+        console.error('❌ Signup error:', error.message);
+        setError(error.message);
+        setLoading(false);
+      } else {
+        console.log('✅ Signup success');
+        alert('Usuario creado con éxito. Ya puedes ingresar.');
+        setLoading(false);
+      }
+    } catch (err: any) {
+      console.error('❌ Signup catch:', err);
+      setError('Ocurrió un error inesperado al intentar registrarse.');
       setLoading(false);
     }
   };

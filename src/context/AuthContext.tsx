@@ -17,26 +17,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    console.log('🔐 AuthContext: Initializing...');
     if (!isSupabaseConfigured) {
+      console.warn('🔐 AuthContext: Supabase not configured');
       setLoading(false);
       return;
     }
 
+    // Safety timeout to prevent white screen
+    const timeout = setTimeout(() => {
+      if (loading) {
+        console.warn('🔐 AuthContext: Loading timeout reached, forcing display');
+        setLoading(false);
+      }
+    }, 5000);
+
     // Check active sessions and sets the user
-    supabase.auth.getSession().then(({ data: { session } }: { data: { session: Session | null } }) => {
+    supabase.auth.getSession().then(({ data: { session }, error }: { data: { session: Session | null }, error: any }) => {
+      if (error) console.error('🔐 AuthContext: Session error:', error);
+      console.log('🔐 AuthContext: Session found:', !!session);
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
+      clearTimeout(timeout);
     });
 
     // Listen for changes on auth state (logged in, signed out, etc.)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: string, session: Session | null) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event: string, session: Session | null) => {
+      console.log('🔐 AuthContext: Auth state changed:', event, !!session);
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      subscription.unsubscribe();
+      clearTimeout(timeout);
+    };
   }, []);
 
   const signOut = async () => {
