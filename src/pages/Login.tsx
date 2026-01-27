@@ -44,12 +44,7 @@ export default function Login() {
 
       <div className="relative z-10 w-full max-w-md">
         <div className="flex flex-col items-center mb-10">
-          <div className="bg-white px-8 py-5 rounded-[2rem] shadow-2xl mb-6">
-            <div className="flex items-center text-5xl font-black tracking-tighter">
-              <span className="text-[#002e5b]">cc</span>
-              <span className="text-[#00bcd4] font-extralight italic -ml-1">w</span>
-            </div>
-          </div>
+
           <h1 className="text-4xl font-black tracking-tight mb-2">Idiomas OCW</h1>
           <p className="text-blue-200/60 font-medium text-center text-sm uppercase tracking-widest">
             {isSignUp ? 'Registro de Docente' : 'Acceso al Panel'}
