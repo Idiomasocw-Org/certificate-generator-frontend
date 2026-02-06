@@ -5,9 +5,9 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 
 // Protected Route Component
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
-  const { session, loading } = useAuth();
-  if (loading) return <div className="min-h-screen bg-[#0f172a] flex items-center justify-center text-white">Cargando...</div>;
-  if (!session) {
+  const { user, loading } = useAuth();
+  if (loading) return <div className="min-h-screen bg-[#002e5b] flex items-center justify-center text-white">Cargando...</div>;
+  if (!user) {
     return <Navigate to="/login" replace />;
   }
   return children;

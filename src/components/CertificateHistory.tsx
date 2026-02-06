@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabase';
+import { useAuth } from '../context/AuthContext';
 import { History, FileText } from 'lucide-react';
 
 interface Certificate {
@@ -17,18 +17,15 @@ interface Props {
 export default function CertificateHistory({ refreshHistory }: Props) {
     const [certificates, setCertificates] = useState<Certificate[]>([]);
     const [loading, setLoading] = useState(true);
+    const { user } = useAuth();
 
     const fetchHistory = async () => {
+        if (!user) return;
         setLoading(true);
         try {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session?.access_token) return;
-
             const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
             const response = await fetch(`${API_URL}/api/certificates`, {
-                headers: {
-                    Authorization: `Bearer ${session.access_token}`,
-                },
+                credentials: 'include'
             });
 
             if (response.ok) {
@@ -44,7 +41,7 @@ export default function CertificateHistory({ refreshHistory }: Props) {
 
     useEffect(() => {
         fetchHistory();
-    }, [refreshHistory]);
+    }, [refreshHistory, user]);
 
     if (loading) {
         return (

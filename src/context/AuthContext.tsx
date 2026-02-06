@@ -1,87 +1,80 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { User, Session } from '@supabase/supabase-js';
-import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import Cookies from 'js-cookie';
+
+interface User {
+  id: string;
+  email: string;
+}
 
 interface AuthContextType {
-  session: Session | null;
   user: User | null;
   loading: boolean;
-  signOut: () => Promise<void>;   
+  login: (user: User) => void;
+  signOut: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    console.log('🔐 AuthContext: Initializing...');
-    if (!isSupabaseConfigured) {
-      console.warn('🔐 AuthContext: Supabase not configured');
-      setLoading(false);
-      return;
-    }
-
-    // Safety timeout to prevent white screen
-    const timeout = setTimeout(() => {
-      if (loading) {
-        console.warn('🔐 AuthContext: Loading timeout reached, forcing display');
-        setLoading(false);
+  const fetchUser = async () => {
+    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    try {
+      const response = await fetch(`${API_URL}/api/auth/me`, {
+        credentials: 'include',
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setUser(data.user);
+      } else {
+        setUser(null);
       }
-    }, 5000);
-
-    // Check active sessions and sets the user
-    supabase.auth.getSession().then(({ data: { session }, error }: { data: { session: Session | null }, error: any }) => {
-      if (error) console.error('🔐 AuthContext: Session error:', error);
-      console.log('🔐 AuthContext: Session found:', !!session);
-      setSession(session);
-      setUser(session?.user ?? null);
+    } catch (error) {
+      console.error("Error fetching user session:", error);
+      setUser(null);
+    } finally {
       setLoading(false);
-      clearTimeout(timeout);
-    });
-
-    // Listen for changes on auth state (logged in, signed out, etc.)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event: string, session: Session | null) => {
-      console.log('🔐 AuthContext: Auth state changed:', event, !!session);
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-
-    return () => {
-      subscription.unsubscribe();
-      clearTimeout(timeout);
-    };
-  }, []);
-
-  const signOut = async () => {
-    await supabase.auth.signOut();
+    }
   };
 
-  if (!isSupabaseConfigured) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-900 p-4">
-        <div className="bg-gray-800 p-8 rounded-xl shadow-2xl max-w-lg w-full border border-gray-700">
-          <h2 className="text-2xl font-bold mb-4 text-white">Configuración Necesaria</h2>
-          <p className="text-gray-400 mb-6">
-            Para continuar, necesitas configurar las variables de entorno de Supabase en un archivo <code className="bg-gray-700 px-2 py-1 rounded text-blue-300">.env</code> en la raíz del proyecto.
-          </p>
-          <div className="bg-black p-4 rounded-lg font-mono text-sm text-green-400 mb-6 overflow-x-auto">
-            <p>VITE_SUPABASE_URL=tu-url-aqui</p>
-            <p>VITE_SUPABASE_ANON_KEY=tu-clave-aqui</p>
-          </div>
-          <p className="text-sm text-gray-500 italic">
-            Una vez creado el archivo .env, reinicia el servidor de desarrollo.
-          </p>
-        </div>
-      </div>
-    );
-  }
+  useEffect(() => {
+    // Verificamos si existe la cookie de sesión
+    const hasToken = Cookies.get('auth_token_exists') === 'true';
+
+    if (hasToken) {
+      fetchUser();
+    } else {
+      setLoading(false);
+      setUser(null);
+    }
+
+    // LIMPIEZA TOTAL DE LOCALSTORAGE
+    localStorage.removeItem('auth_user');
+    localStorage.removeItem('auth_token');
+  }, []);
+
+  const login = (newUser: User) => {
+    Cookies.set('auth_token_exists', 'true', { expires: 1 });
+    setUser(newUser);
+  };
+
+  const signOut = async () => {
+    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    try {
+      await fetch(`${API_URL}/api/auth/logout`, { method: 'POST', credentials: 'include' });
+    } catch (e) {
+      console.error("Error logging out:", e);
+    }
+    Cookies.remove('auth_token_exists');
+    setUser(null);
+    // Asegurarse de limpiar localStorage por si acaso
+    localStorage.clear();
+  };
 
   return (
-    <AuthContext.Provider value={{ session, user, loading, signOut }}>
+    <AuthContext.Provider value={{ user, loading, login, signOut }}>
       {!loading && children}
     </AuthContext.Provider>
   );

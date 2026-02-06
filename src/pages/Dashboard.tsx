@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { supabase } from '../lib/supabase';
 import CertificateHistory from '../components/CertificateHistory';
 import { Download, LogOut, User, Award, Calendar, CheckCircle2 } from 'lucide-react';
 
@@ -16,27 +15,19 @@ export default function Dashboard() {
   const [error, setError] = useState<string | null>(null);
   const [refreshHistory, setRefreshHistory] = useState(false);
 
-  // Limpiar rastro viejo de LocalStorage si existe (migración a Cookies)
-  useState(() => {
-    Object.keys(localStorage).forEach(key => {
-      if (key.startsWith('sb-')) localStorage.removeItem(key);
-    });
-  });
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) throw new Error('No autenticado');
+      if (!user) throw new Error('No autenticado');
 
       const response = await fetch(`${API_URL}/api/certificates`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${session.access_token}`,
         },
+        credentials: 'include',
         body: JSON.stringify({
           studentName,
           level,
@@ -90,7 +81,6 @@ export default function Dashboard() {
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* Left Column: Generator Form */}
         <div className="lg:col-span-5">
           <div className="bg-white rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.04)] border border-gray-100 overflow-hidden transition-all hover:shadow-[0_20px_60px_rgba(0,0,0,0.06)]">
             <div className="bg-gradient-to-r from-[#002e5b] to-[#004a8f] px-8 py-6 flex items-center gap-3">
@@ -101,7 +91,6 @@ export default function Dashboard() {
             </div>
 
             <form onSubmit={handleSubmit} className="p-8 space-y-6">
-              {/* Student Name */}
               <div>
                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.15em] ml-1 mb-2.5 block">Nombre del Estudiante</label>
                 <div className="relative group">
@@ -118,7 +107,6 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              {/* Level Selector */}
               <div>
                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.15em] ml-1 mb-2.5 block">Nivel CEFR</label>
                 <div className="relative group">
@@ -138,13 +126,9 @@ export default function Dashboard() {
                     <option value="B2">B2 - Avanzado</option>
                     <option value="C1">C1 - Dominio</option>
                   </select>
-                  <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-300">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7"></path></svg>
-                  </div>
                 </div>
               </div>
 
-              {/* Date Picker */}
               <div>
                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.15em] ml-1 mb-2.5 block">Fecha de Emisión</label>
                 <div className="relative group">
@@ -183,7 +167,6 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Right Column: History Table */}
         <div className="lg:col-span-7">
           <div className="bg-white rounded-[2.5rem] p-10 shadow-[0_20px_50px_rgba(0,0,0,0.04)] border border-gray-100 min-h-full transition-all hover:shadow-[0_20px_60px_rgba(0,0,0,0.06)]">
             <CertificateHistory refreshHistory={refreshHistory} />

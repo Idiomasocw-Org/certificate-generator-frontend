@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { supabase } from '../lib/supabase';
 import { useNavigate } from 'react-router-dom';
 import { Mail, Lock, Loader2 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -10,6 +12,7 @@ export default function Login() {
   const [error, setError] = useState<string | null>(null);
   const [isSignUp, setIsSignUp] = useState(false);
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -17,18 +20,29 @@ export default function Login() {
     setError(null);
 
     try {
+      const endpoint = isSignUp ? '/api/auth/register' : '/api/auth/login';
+      const response = await fetch(`${API_URL}${endpoint}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // Importante para cookies
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Error en la autenticación');
+      }
+
       if (isSignUp) {
-        const { error } = await supabase.auth.signUp({ email, password });
-        if (error) throw error;
         alert('✨ Cuenta registrada. Ya puedes iniciar sesión.');
         setIsSignUp(false);
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
+        login(data.user);
         navigate('/dashboard');
       }
     } catch (err: any) {
-      setError(err.message || 'Error en la autenticación');
+      setError(err.message || 'Error al conectar con el servidor');
     } finally {
       setLoading(false);
     }
@@ -36,7 +50,6 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-[#002e5b] text-white flex flex-col justify-center items-center px-6 selection:bg-[#00bcd4]/30">
-      {/* Decorative Circles */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none opacity-20">
         <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#00bcd4]/20 rounded-full blur-[140px]" />
         <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-blue-400/10 rounded-full blur-[140px]" />
@@ -44,7 +57,6 @@ export default function Login() {
 
       <div className="relative z-10 w-full max-w-md">
         <div className="flex flex-col items-center mb-10">
-
           <h1 className="text-4xl font-black tracking-tight mb-2">Idiomas OCW</h1>
           <p className="text-blue-200/60 font-medium text-center text-sm uppercase tracking-widest">
             {isSignUp ? 'Registro de Docente' : 'Acceso al Panel'}
@@ -53,7 +65,7 @@ export default function Login() {
 
         <div className="bg-white/5 backdrop-blur-2xl p-10 rounded-[3rem] border border-white/10 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)]">
           {error && (
-            <div className="mb-6 p-4 bg-red-500/20 border border-red-500/30 rounded-2xl text-red-100 text-sm font-medium animate-shake">
+            <div className="mb-6 p-4 bg-red-500/20 border border-red-500/30 rounded-2xl text-red-100 text-sm font-medium">
               {error}
             </div>
           )}
@@ -114,15 +126,6 @@ export default function Login() {
       </div>
 
       <p className="mt-12 text-[10px] text-blue-100/20 font-bold uppercase tracking-widest">© 2026 Idiomas OCW • One Culture World</p>
-
-      <style>{`
-        @keyframes shake {
-          0%, 100% { transform: translateX(0); }
-          25% { transform: translateX(-4px); }
-          75% { transform: translateX(4px); }
-        }
-        .animate-shake { animation: shake 0.3s ease-in-out; }
-      `}</style>
     </div>
   );
 }
