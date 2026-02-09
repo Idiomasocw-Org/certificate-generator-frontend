@@ -25,8 +25,8 @@ export const supabase = isSupabaseConfigured
   ? createClient(supabaseUrl, supabaseAnonKey, {
     auth: {
       storage: cookieStorage,
-      autoRefreshToken: true,
-      persistSession: true
+      autoRefreshToken: false, // Deshabilitado, el backend maneja esto
+      persistSession: false    // Deshabilitado, el backend maneja la sesión
     }
   })
   : null as any;

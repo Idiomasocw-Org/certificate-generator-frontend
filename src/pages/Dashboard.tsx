@@ -6,7 +6,7 @@ import { Download, LogOut, User, Award, Calendar, CheckCircle2 } from 'lucide-re
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 export default function Dashboard() {
-  const { user, signOut } = useAuth();
+  const { user, signOut, authFetch } = useAuth();
 
   const [studentName, setStudentName] = useState('');
   const [level, setLevel] = useState('');
@@ -22,12 +22,11 @@ export default function Dashboard() {
     try {
       if (!user) throw new Error('No autenticado');
 
-      const response = await fetch(`${API_URL}/api/certificates`, {
+      const response = await authFetch(`${API_URL}/api/certificates`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include',
         body: JSON.stringify({
           studentName,
           level,

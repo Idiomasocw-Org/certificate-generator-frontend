@@ -17,16 +17,14 @@ interface Props {
 export default function CertificateHistory({ refreshHistory }: Props) {
     const [certificates, setCertificates] = useState<Certificate[]>([]);
     const [loading, setLoading] = useState(true);
-    const { user } = useAuth();
+    const { user, authFetch } = useAuth();
 
     const fetchHistory = async () => {
         if (!user) return;
         setLoading(true);
         try {
             const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-            const response = await fetch(`${API_URL}/api/certificates`, {
-                credentials: 'include'
-            });
+            const response = await authFetch(`${API_URL}/api/certificates`);
 
             if (response.ok) {
                 const data = await response.json();
