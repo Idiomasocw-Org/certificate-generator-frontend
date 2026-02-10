@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { History, FileText } from 'lucide-react';
+import { History, FileText, Search } from 'lucide-react';
 
 interface Certificate {
     id: string;
@@ -17,6 +17,7 @@ interface Props {
 export default function CertificateHistory({ refreshHistory }: Props) {
     const [certificates, setCertificates] = useState<Certificate[]>([]);
     const [loading, setLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState('');
     const { user, authFetch } = useAuth();
 
     const fetchHistory = async () => {
@@ -67,6 +68,18 @@ export default function CertificateHistory({ refreshHistory }: Props) {
                 </div>
             </div>
 
+            {/* Buscador */}
+            <div className="relative mb-6">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <input
+                    type="text"
+                    placeholder="Buscar por estudiante o nivel..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full bg-white border border-gray-100 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#00bcd4]/20 focus:border-[#00bcd4]/50 transition-all font-medium placeholder:text-gray-300"
+                />
+            </div>
+
             <div className="overflow-x-auto">
                 <table className="min-w-full">
                     <thead>
@@ -83,29 +96,39 @@ export default function CertificateHistory({ refreshHistory }: Props) {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-50">
-                        {certificates.length === 0 ? (
+                        {certificates.filter(cert =>
+                            cert.student_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            cert.course_level.toLowerCase().includes(searchTerm.toLowerCase())
+                        ).length === 0 ? (
                             <tr>
                                 <td colSpan={3} className="py-12 text-center text-gray-300">
                                     <FileText size={42} className="mx-auto mb-2 opacity-20" />
-                                    <p className="text-sm font-medium">Sin certificados emitidos</p>
+                                    <p className="text-sm font-medium">
+                                        {searchTerm ? 'No se encontraron resultados' : 'Sin certificados emitidos'}
+                                    </p>
                                 </td>
                             </tr>
                         ) : (
-                            certificates.map(cert => (
-                                <tr key={cert.id} className="hover:bg-gray-50/50 transition-colors">
-                                    <td className="py-4 pr-4 font-bold text-[#002e5b]">
-                                        {cert.student_name}
-                                    </td>
-                                    <td className="py-4 px-4 text-center">
-                                        <span className="text-[10px] font-black bg-[#00bcd4]/10 text-[#00bcd4] px-2 py-0.5 rounded border border-[#00bcd4]/20">
-                                            {cert.course_level}
-                                        </span>
-                                    </td>
-                                    <td className="py-4 pl-4 text-right text-[11px] font-bold text-gray-400 uppercase">
-                                        {new Date(cert.completion_date).toLocaleDateString('es-ES')}
-                                    </td>
-                                </tr>
-                            ))
+                            certificates
+                                .filter(cert =>
+                                    cert.student_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                    cert.course_level.toLowerCase().includes(searchTerm.toLowerCase())
+                                )
+                                .map(cert => (
+                                    <tr key={cert.id} className="hover:bg-gray-50/50 transition-colors">
+                                        <td className="py-4 pr-4 font-bold text-[#002e5b]">
+                                            {cert.student_name}
+                                        </td>
+                                        <td className="py-4 px-4 text-center">
+                                            <span className="text-[10px] font-black bg-[#00bcd4]/10 text-[#00bcd4] px-2 py-0.5 rounded border border-[#00bcd4]/20">
+                                                {cert.course_level}
+                                            </span>
+                                        </td>
+                                        <td className="py-4 pl-4 text-right text-[11px] font-bold text-gray-400 uppercase">
+                                            {new Date(cert.completion_date).toLocaleDateString('es-ES')}
+                                        </td>
+                                    </tr>
+                                ))
                         )}
                     </tbody>
                 </table>

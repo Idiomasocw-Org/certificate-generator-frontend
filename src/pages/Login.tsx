@@ -11,6 +11,9 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSignUp, setIsSignUp] = useState(false);
+  const [showForgot, setShowForgot] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [forgotStatus, setForgotStatus] = useState({ loading: false, type: '', message: '' });
   const navigate = useNavigate();
   const { login } = useAuth();
 
@@ -45,6 +48,27 @@ export default function Login() {
       setError(err.message || 'Error al conectar con el servidor');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setForgotStatus({ loading: true, type: '', message: '' });
+
+    try {
+      const response = await fetch(`${API_URL}/api/auth/forgot-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: forgotEmail }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Error al procesar solicitud');
+
+      setForgotStatus({ loading: false, type: 'success', message: data.message });
+      setForgotEmail('');
+    } catch (err: any) {
+      setForgotStatus({ loading: false, type: 'error', message: err.message });
     }
   };
 
@@ -101,6 +125,21 @@ export default function Login() {
               </div>
             </div>
 
+            {!isSignUp && (
+              <div className="flex justify-end -mt-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowForgot(true);
+                    setForgotStatus({ loading: false, type: '', message: '' });
+                  }}
+                  className="text-[10px] font-bold text-blue-200/30 hover:text-[#00bcd4] transition-colors uppercase tracking-widest"
+                >
+                  ¿Olvidaste tu contraseña?
+                </button>
+              </div>
+            )}
+
             <button
               type="submit"
               disabled={loading}
@@ -126,6 +165,61 @@ export default function Login() {
       </div>
 
       <p className="mt-12 text-[10px] text-blue-100/20 font-bold uppercase tracking-widest">© 2026 Idiomas OCW • One Culture World</p>
+
+      {/* Modal Olvidé mi contraseña */}
+      {showForgot && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
+          <div className="absolute inset-0 bg-[#002e5b]/40 backdrop-blur-md" onClick={() => setShowForgot(false)} />
+          <div className="relative bg-white/10 backdrop-blur-2xl w-full max-w-md p-10 rounded-[3rem] border border-white/10 shadow-2xl animate-in fade-in zoom-in duration-200">
+            <div className="flex flex-col items-center mb-8">
+              <h3 className="text-xl font-black uppercase tracking-tight text-white">Recuperar Acceso</h3>
+              <p className="text-blue-100/40 text-[10px] uppercase font-bold tracking-widest mt-2">Introduce tu correo registrado</p>
+            </div>
+
+            {forgotStatus.message && (
+              <div className={`mb-6 p-4 rounded-2xl text-xs font-bold border flex items-center gap-3 ${forgotStatus.type === 'success' ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-200' : 'bg-red-500/10 border-red-500/30 text-red-200'
+                }`}>
+                <div className={`w-1.5 h-1.5 rounded-full ${forgotStatus.type === 'success' ? 'bg-emerald-500' : 'bg-red-500'}`} />
+                <span>{forgotStatus.message}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleForgotPassword} className="space-y-6">
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold text-blue-200/50 uppercase tracking-widest ml-2 block">Email</label>
+                <div className="relative">
+                  <Mail className="absolute left-5 top-1/2 -translate-y-1/2 text-blue-100/30 w-5 h-5" />
+                  <input
+                    type="email"
+                    required
+                    value={forgotEmail}
+                    onChange={(e) => setForgotEmail(e.target.value)}
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl pl-14 pr-6 py-5 focus:outline-none focus:ring-2 focus:ring-[#00bcd4]/50 transition-all font-medium text-white"
+                    placeholder="docente@ocw.com"
+                  />
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-4">
+                <button
+                  type="submit"
+                  disabled={forgotStatus.loading}
+                  className="w-full bg-[#00bcd4] hover:bg-[#00acc1] text-white font-black py-5 rounded-2xl shadow-xl shadow-[#00bcd4]/20 transition-all flex items-center justify-center gap-3"
+                >
+                  {forgotStatus.loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <span className="uppercase text-[11px] tracking-widest">Enviar Instrucciones</span>}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowForgot(false)}
+                  className="w-full bg-white/5 hover:bg-white/10 text-white/40 hover:text-white font-bold py-4 rounded-2xl transition-all text-[10px] uppercase tracking-widest"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
