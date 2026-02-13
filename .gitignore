@@ -146,3 +146,7 @@ vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 generated_certificates/
 .env
+.env.*
+*.log
+local_frontend_v2.log
+.antigravityignore
