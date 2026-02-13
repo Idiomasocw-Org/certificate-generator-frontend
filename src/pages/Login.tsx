@@ -96,10 +96,12 @@ export default function Login() {
 
           <form onSubmit={handleAuth} className="space-y-7">
             <div className="space-y-2">
-              <label className="text-[10px] font-bold text-blue-200/50 uppercase tracking-[0.2em] ml-2 block">Email Personal</label>
+              <label htmlFor="email" className="text-[10px] font-bold text-blue-200/50 uppercase tracking-[0.2em] ml-2 block pointer-events-none">Email Personal</label>
               <div className="relative">
-                <Mail className="absolute left-5 top-1/2 -translate-y-1/2 text-blue-100/30 w-5 h-5" />
+                <Mail className="absolute left-5 top-1/2 -translate-y-1/2 text-blue-100/30 w-5 h-5 pointer-events-none" />
                 <input
+                  id="email"
+                  name="email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -111,10 +113,12 @@ export default function Login() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-bold text-blue-200/50 uppercase tracking-[0.2em] ml-2 block">Contraseña</label>
+              <label htmlFor="password" className="text-[10px] font-bold text-blue-200/50 uppercase tracking-[0.2em] ml-2 block pointer-events-none">Contraseña</label>
               <div className="relative">
-                <Lock className="absolute left-5 top-1/2 -translate-y-1/2 text-blue-100/30 w-5 h-5" />
+                <Lock className="absolute left-5 top-1/2 -translate-y-1/2 text-blue-100/30 w-5 h-5 pointer-events-none" />
                 <input
+                  id="password"
+                  name="password"
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -186,10 +190,12 @@ export default function Login() {
 
             <form onSubmit={handleForgotPassword} className="space-y-6">
               <div className="space-y-2">
-                <label className="text-[10px] font-bold text-blue-200/50 uppercase tracking-widest ml-2 block">Email</label>
+                <label htmlFor="forgotEmail" className="text-[10px] font-bold text-blue-200/50 uppercase tracking-widest ml-2 block pointer-events-none">Email</label>
                 <div className="relative">
-                  <Mail className="absolute left-5 top-1/2 -translate-y-1/2 text-blue-100/30 w-5 h-5" />
+                  <Mail className="absolute left-5 top-1/2 -translate-y-1/2 text-blue-100/30 w-5 h-5 pointer-events-none" />
                   <input
+                    id="forgotEmail"
+                    name="forgotEmail"
                     type="email"
                     required
                     value={forgotEmail}

@@ -1,16 +1,48 @@
-import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Lock, Loader2, CheckCircle2, ArrowLeft } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 export default function ResetPassword() {
-    const { token } = useParams();
     const navigate = useNavigate();
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [status, setStatus] = useState({ type: '' as 'success' | 'error' | '', message: '' });
+    const [accessToken, setAccessToken] = useState<string | null>(null);
+    const [refreshToken, setRefreshToken] = useState<string | null>(null);
+
+    useEffect(() => {
+        // Supabase usa normalmente hash (#), pero algunas configs pueden usar search (?)
+        const hash = window.location.hash;
+        const search = window.location.search;
+
+        console.log('🔍 DEBUG: ResetPassword mount');
+        console.log('📍 Full URL:', window.location.href);
+        console.log('💾 Hash present:', !!hash, 'Search present:', !!search);
+
+        const params = new URLSearchParams(hash ? hash.substring(1) : search);
+        const token = params.get('access_token');
+        const refresh = params.get('refresh_token');
+        const errorCode = params.get('error_code');
+        const errorMsg = params.get('error_description');
+
+        if (errorCode || errorMsg) {
+            setStatus({ type: 'error', message: `Error de Supabase: ${errorMsg || errorCode}` });
+            return;
+        }
+
+        if (token) {
+            setAccessToken(token);
+            if (refresh) setRefreshToken(refresh);
+            // Eliminamos replaceState de aquí para evitar condiciones de carrera con React Strict Mode en desarrollo
+        } else if (!hash && !search) {
+            setStatus({ type: 'error', message: 'No se encontró token. Por favor solicita un nuevo enlace desde el Login.' });
+        } else {
+            setStatus({ type: 'error', message: 'El enlace no contiene un token válido. Intenta solicitar uno nuevo.' });
+        }
+    }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -19,20 +51,33 @@ export default function ResetPassword() {
             return;
         }
 
+        if (!accessToken) {
+            setStatus({ type: 'error', message: 'Sesión no válida. Vuelve a solicitar el correo de recuperación.' });
+            return;
+        }
+
         setLoading(true);
         setStatus({ type: '', message: '' });
 
         try {
-            const response = await fetch(`${API_URL}/api/auth/reset-password`, {
+            // Usamos el endpoint update-password que requiere autenticación.
+            // Proporcionamos el token de acceso del enlace de recuperación (que inicia sesión al usuario).
+            const response = await fetch(`${API_URL}/api/auth/update-password`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ token, newPassword: password }),
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${accessToken}`
+                },
+                body: JSON.stringify({ password, refreshToken }),
             });
 
             const data = await response.json();
             if (!response.ok) throw new Error(data.error || 'Error al restablecer contraseña');
 
-            setStatus({ type: 'success', message: '¡Tu contraseña ha sido actualizada! Ahora puedes iniciar sesión.' });
+            // Seguridad: Limpiar el hash/search de la URL solo DESPUÉS del éxito
+            window.history.replaceState(null, '', window.location.pathname);
+
+            setStatus({ type: 'success', message: '¡Tu contraseña ha sido actualizada! Redirigiendo...' });
             setTimeout(() => navigate('/login'), 3000);
         } catch (err: any) {
             setStatus({ type: 'error', message: err.message });
@@ -66,29 +111,40 @@ export default function ResetPassword() {
                         </div>
                     )}
 
-                    {status.type !== 'success' && (
+                    {!accessToken && !status.message && (
+                        <div className="text-center text-sm text-blue-200/60 mb-6">
+                            Verificando enlace...
+                        </div>
+                    )}
+
+                    {accessToken && status.type !== 'success' && (
                         <form onSubmit={handleSubmit} className="space-y-6">
                             <div className="space-y-2">
-                                <label className="text-[10px] font-bold text-blue-200/50 uppercase tracking-widest ml-2 block">Nueva Contraseña</label>
+                                <label htmlFor="password" className="text-[10px] font-bold text-blue-200/50 uppercase tracking-widest ml-2 block pointer-events-none">Nueva Contraseña</label>
                                 <div className="relative">
-                                    <Lock className="absolute left-5 top-1/2 -translate-y-1/2 text-blue-100/30 w-5 h-5" />
+                                    <Lock className="absolute left-5 top-1/2 -translate-y-1/2 text-blue-100/30 w-5 h-5 pointer-events-none" />
                                     <input
+                                        id="password"
+                                        name="password"
                                         type="password"
                                         required
-                                        minLength={6}
+                                        minLength={8}
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
                                         className="w-full bg-white/5 border border-white/10 rounded-2xl pl-14 pr-6 py-5 focus:outline-none focus:ring-2 focus:ring-[#00bcd4]/50 transition-all font-medium"
                                         placeholder="••••••••"
                                     />
+                                    <p className="text-[9px] text-blue-200/30 mt-1 ml-2">Mín. 8 caracteres, 1 mayúscula y 1 número</p>
                                 </div>
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-[10px] font-bold text-blue-200/50 uppercase tracking-widest ml-2 block">Confirmar Contraseña</label>
+                                <label htmlFor="confirmPassword" className="text-[10px] font-bold text-blue-200/50 uppercase tracking-widest ml-2 block pointer-events-none">Confirmar Contraseña</label>
                                 <div className="relative">
-                                    <Lock className="absolute left-5 top-1/2 -translate-y-1/2 text-blue-100/30 w-5 h-5" />
+                                    <Lock className="absolute left-5 top-1/2 -translate-y-1/2 text-blue-100/30 w-5 h-5 pointer-events-none" />
                                     <input
+                                        id="confirmPassword"
+                                        name="confirmPassword"
                                         type="password"
                                         required
                                         value={confirmPassword}

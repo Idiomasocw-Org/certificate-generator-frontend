@@ -94,10 +94,10 @@ export default function Dashboard() {
       setError(null);
       setRefreshHistory(prev => !prev);
 
-      // Show success toast
+      // Mostrar aviso de éxito
       showToast(`Certificado generado para ${studentName}`, 'success');
     } catch (error: any) {
-      console.error(error);
+      console.error("Error al generar certificado:", error);
       const errorMsg = error.message || 'Error al conectar con el servidor';
       setError(errorMsg);
       showToast(errorMsg, 'error');
@@ -165,8 +165,10 @@ export default function Dashboard() {
 
               <div className="space-y-4">
                 <div>
-                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 mb-2 block">Contraseña Actual</label>
+                  <label htmlFor="oldPassword" className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 mb-2 block pointer-events-none">Contraseña Actual</label>
                   <input
+                    id="oldPassword"
+                    name="oldPassword"
                     type="password"
                     required
                     className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-5 py-4 focus:outline-none focus:ring-4 focus:ring-[#00bcd4]/10 focus:border-[#00bcd4]/40 transition-all font-semibold"
@@ -175,19 +177,24 @@ export default function Dashboard() {
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 mb-2 block">Nueva Contraseña</label>
+                  <label htmlFor="newPassword" className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 mb-2 block pointer-events-none">Nueva Contraseña</label>
                   <input
+                    id="newPassword"
+                    name="newPassword"
                     type="password"
                     required
-                    minLength={6}
+                    minLength={8}
                     className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-5 py-4 focus:outline-none focus:ring-4 focus:ring-[#00bcd4]/10 focus:border-[#00bcd4]/40 transition-all font-semibold"
                     value={passwordForm.newPassword}
                     onChange={e => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
                   />
+                  <p className="text-[9px] text-gray-400 mt-1 ml-1">Mín. 8 caracteres, 1 mayúscula y 1 número</p>
                 </div>
                 <div>
-                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 mb-2 block">Confirmar Nueva Contraseña</label>
+                  <label htmlFor="confirmPassword" className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 mb-2 block pointer-events-none">Confirmar Nueva Contraseña</label>
                   <input
+                    id="confirmPassword"
+                    name="confirmPassword"
                     type="password"
                     required
                     className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-5 py-4 focus:outline-none focus:ring-4 focus:ring-[#00bcd4]/10 focus:border-[#00bcd4]/40 transition-all font-semibold"
@@ -228,12 +235,14 @@ export default function Dashboard() {
 
             <form onSubmit={handleSubmit} className="p-8 space-y-6">
               <div>
-                <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.15em] ml-1 mb-2.5 block">Nombre del Estudiante</label>
+                <label htmlFor="studentName" className="text-[10px] font-black text-gray-400 uppercase tracking-[0.15em] ml-1 mb-2.5 block pointer-events-none">Nombre del Estudiante</label>
                 <div className="relative group">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 transition-colors group-focus-within:text-[#00bcd4]">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 transition-colors group-focus-within:text-[#00bcd4] pointer-events-none">
                     <User size={20} />
                   </div>
                   <input
+                    id="studentName"
+                    name="studentName"
                     className="w-full bg-gray-50/50 border border-gray-100 rounded-2xl pl-12 pr-4 py-4 focus:outline-none focus:ring-4 focus:ring-[#00bcd4]/10 focus:bg-white focus:border-[#00bcd4]/40 transition-all text-sm font-semibold text-[#002e5b] placeholder:text-gray-300"
                     placeholder="Ej: Barbara Arias"
                     value={studentName}
@@ -244,12 +253,14 @@ export default function Dashboard() {
               </div>
 
               <div>
-                <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.15em] ml-1 mb-2.5 block">Nivel CEFR</label>
+                <label htmlFor="level" className="text-[10px] font-black text-gray-400 uppercase tracking-[0.15em] ml-1 mb-2.5 block pointer-events-none">Nivel CEFR</label>
                 <div className="relative group">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 transition-colors group-focus-within:text-[#00bcd4]">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 transition-colors group-focus-within:text-[#00bcd4] pointer-events-none">
                     <Award size={20} />
                   </div>
                   <select
+                    id="level"
+                    name="level"
                     className="w-full bg-gray-50/50 border border-gray-100 rounded-2xl pl-12 pr-10 py-4 focus:outline-none focus:ring-4 focus:ring-[#00bcd4]/10 focus:bg-white focus:border-[#00bcd4]/40 transition-all text-sm font-semibold text-[#002e5b] appearance-none cursor-pointer"
                     value={level}
                     onChange={e => setLevel(e.target.value)}
@@ -266,12 +277,14 @@ export default function Dashboard() {
               </div>
 
               <div>
-                <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.15em] ml-1 mb-2.5 block">Fecha de Emisión</label>
+                <label htmlFor="issueDate" className="text-[10px] font-black text-gray-400 uppercase tracking-[0.15em] ml-1 mb-2.5 block pointer-events-none">Fecha de Emisión</label>
                 <div className="relative group">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 transition-colors group-focus-within:text-[#00bcd4]">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 transition-colors group-focus-within:text-[#00bcd4] pointer-events-none">
                     <Calendar size={20} />
                   </div>
                   <input
+                    id="issueDate"
+                    name="issueDate"
                     type="date"
                     className="w-full bg-gray-50/50 border border-gray-100 rounded-2xl pl-12 pr-4 py-4 focus:outline-none focus:ring-4 focus:ring-[#00bcd4]/10 focus:bg-white focus:border-[#00bcd4]/40 transition-all text-sm font-semibold text-[#002e5b] cursor-pointer"
                     value={date}
@@ -304,7 +317,7 @@ export default function Dashboard() {
         </div>
 
         <div className="lg:col-span-7">
-          <div className="bg-white rounded-[2.5rem] p-10 shadow-[0_20px_50px_rgba(0,0,0,0.04)] border border-gray-100 min-h-full transition-all hover:shadow-[0_20px_60px_rgba(0,0,0,0.06)]">
+          <div className="bg-white rounded-[2.5rem] p-10 shadow-[0_20px_50px_rgba(0,0,0,0.04)] border border-gray-100 min-h-full transition-all hover:shadow-[0_20px_60px_rgba(0,0,0,0.06)] overflow-hidden">
             <CertificateHistory refreshHistory={refreshHistory} />
           </div>
         </div>

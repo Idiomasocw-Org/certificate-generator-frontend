@@ -71,7 +71,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(null);
       }
     } catch (error) {
-      console.error("Error fetching user session:", error);
+      console.error("Error al obtener la sesión del usuario:", error);
       setUser(null);
     } finally {
       setLoading(false);
