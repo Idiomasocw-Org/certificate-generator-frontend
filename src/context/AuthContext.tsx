@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import Cookies from 'js-cookie';
+import CONFIG from '../config';
 
 interface User {
   id: string;
@@ -19,7 +20,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+  const { API_URL } = CONFIG;
 
   // Función para limpiar cookies antiguas de Supabase que pudieran haber quedado
   const clearSupabaseCookies = () => {

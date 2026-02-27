@@ -5,6 +5,9 @@ export default defineConfig({
     plugins: [react()],
     server: {
         allowedHosts: ['.trycloudflare.com'],
+        hmr: {
+            clientPort: 443,
+        },
         proxy: {
             '/api': {
                 target: 'http://localhost:3000',

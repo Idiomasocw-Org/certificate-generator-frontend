@@ -3,8 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import CertificateHistory from '../components/CertificateHistory';
 import { Download, LogOut, User, Award, Calendar, CheckCircle2 } from 'lucide-react';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+import { API_URL } from '../config';
 
 export default function Dashboard() {
   const { user, signOut, authFetch } = useAuth();

@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Lock, Loader2, CheckCircle2, ArrowLeft } from 'lucide-react';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+import { Lock, Loader2, CheckCircle2, ArrowLeft, Eye, EyeOff } from 'lucide-react';
+import { API_URL } from '../config';
 
 export default function ResetPassword() {
     const navigate = useNavigate();
@@ -12,6 +11,32 @@ export default function ResetPassword() {
     const [status, setStatus] = useState({ type: '' as 'success' | 'error' | '', message: '' });
     const [accessToken, setAccessToken] = useState<string | null>(null);
     const [refreshToken, setRefreshToken] = useState<string | null>(null);
+    const [showPassword, setShowPassword] = useState(false);
+    const [strength, setStrength] = useState(0);
+
+    const calculateStrength = (pass: string) => {
+        let s = 0;
+        if (pass.length >= 8) s += 25;
+        if (/[A-Z]/.test(pass)) s += 25;
+        if (/[0-9]/.test(pass)) s += 25;
+        if (/[^A-Za-z0-9]/.test(pass)) s += 25;
+        setStrength(s);
+    };
+
+    const getStrengthColor = () => {
+        if (strength <= 25) return 'bg-red-500';
+        if (strength <= 50) return 'bg-orange-500';
+        if (strength <= 75) return 'bg-yellow-500';
+        return 'bg-emerald-500';
+    };
+
+    const getStrengthText = () => {
+        if (strength === 0) return '';
+        if (strength <= 25) return 'Muy débil';
+        if (strength <= 50) return 'Débil';
+        if (strength <= 75) return 'Buena';
+        return 'Excelente';
+    };
 
     useEffect(() => {
         // Supabase usa normalmente hash (#), pero algunas configs pueden usar search (?)
@@ -126,16 +151,42 @@ export default function ResetPassword() {
                                     <input
                                         id="password"
                                         name="password"
-                                        type="password"
+                                        type={showPassword ? 'text' : 'password'}
                                         required
                                         minLength={8}
                                         value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                        className="w-full bg-white/5 border border-white/10 rounded-2xl pl-14 pr-6 py-5 focus:outline-none focus:ring-2 focus:ring-[#00bcd4]/50 transition-all font-medium"
+                                        onChange={(e) => {
+                                            setPassword(e.target.value);
+                                            calculateStrength(e.target.value);
+                                        }}
+                                        className="w-full bg-white/5 border border-white/10 rounded-2xl pl-14 pr-16 py-5 focus:outline-none focus:ring-2 focus:ring-[#00bcd4]/50 transition-all font-medium text-white placeholder:text-white/20"
                                         placeholder="••••••••"
                                     />
-                                    <p className="text-[9px] text-blue-200/30 mt-1 ml-2">Mín. 8 caracteres, 1 mayúscula y 1 número</p>
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute right-5 top-1/2 -translate-y-1/2 text-blue-100/30 hover:text-[#00bcd4] transition-colors p-2 z-30"
+                                        tabIndex={-1}
+                                    >
+                                        {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                    </button>
                                 </div>
+
+                                {password && (
+                                    <div className="space-y-2 px-2 animate-in fade-in slide-in-from-top-1 duration-200">
+                                        <div className="flex justify-between items-center text-[9px] font-black uppercase tracking-widest">
+                                            <span className="text-blue-200/40">Seguridad:</span>
+                                            <span className={strength === 100 ? 'text-emerald-400' : 'text-blue-200/60'}>{getStrengthText()}</span>
+                                        </div>
+                                        <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                                            <div
+                                                className={`h-full transition-all duration-500 ease-out ${getStrengthColor()}`}
+                                                style={{ width: `${strength}%` }}
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+                                <p className="text-[9px] text-blue-200/30 ml-2">Mín. 8 caracteres, 1 mayúscula, 1 número y 1 símbolo</p>
                             </div>
 
                             <div className="space-y-2">
@@ -145,13 +196,21 @@ export default function ResetPassword() {
                                     <input
                                         id="confirmPassword"
                                         name="confirmPassword"
-                                        type="password"
+                                        type={showPassword ? 'text' : 'password'}
                                         required
                                         value={confirmPassword}
                                         onChange={(e) => setConfirmPassword(e.target.value)}
-                                        className="w-full bg-white/5 border border-white/10 rounded-2xl pl-14 pr-6 py-5 focus:outline-none focus:ring-2 focus:ring-[#00bcd4]/50 transition-all font-medium"
+                                        className="w-full bg-white/5 border border-white/10 rounded-2xl pl-14 pr-16 py-5 focus:outline-none focus:ring-2 focus:ring-[#00bcd4]/50 transition-all font-medium text-white placeholder:text-white/20"
                                         placeholder="••••••••"
                                     />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute right-5 top-1/2 -translate-y-1/2 text-blue-100/30 hover:text-[#00bcd4] transition-colors p-2 z-30"
+                                        tabIndex={-1}
+                                    >
+                                        {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                    </button>
                                 </div>
                             </div>
 
@@ -174,7 +233,7 @@ export default function ResetPassword() {
                         </button>
                     </div>
                 </div>
-            </div>
-        </div>
+            </div >
+        </div >
     );
 }

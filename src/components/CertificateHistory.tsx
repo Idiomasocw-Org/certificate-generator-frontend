@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { History, FileText, Search } from 'lucide-react';
+import { API_URL } from '../config';
 
 interface Certificate {
     id: string;
@@ -8,6 +9,7 @@ interface Certificate {
     course_level: string;
     completion_date: string;
     created_at: string;
+    storage_path?: string;
 }
 
 interface Props {
@@ -17,6 +19,7 @@ interface Props {
 export default function CertificateHistory({ refreshHistory }: Props) {
     const [certificates, setCertificates] = useState<Certificate[]>([]);
     const [loading, setLoading] = useState(true);
+    const [downloadingId, setDownloadingId] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const { user, authFetch } = useAuth();
 
@@ -24,7 +27,6 @@ export default function CertificateHistory({ refreshHistory }: Props) {
         if (!user) return;
         setLoading(true);
         try {
-            const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
             const response = await authFetch(`${API_URL}/api/certificates`);
 
             if (response.ok) {
@@ -35,6 +37,31 @@ export default function CertificateHistory({ refreshHistory }: Props) {
             console.error('Error fetching history:', error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleDownload = async (id: string, name: string) => {
+        setDownloadingId(id);
+        try {
+            const response = await authFetch(`${API_URL}/api/certificates/${id}/download`);
+            const data = await response.json();
+
+            if (response.ok && data.url) {
+                // Crear un link temporal y hacer clic para descargar
+                const a = document.createElement('a');
+                a.href = data.url;
+                a.download = `${name.replace(/\s+/g, '_')}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            } else {
+                alert('No se pudo descargar el archivo: ' + (data.error || 'Error desconocido'));
+            }
+        } catch (error) {
+            console.error('Error downloading:', error);
+            alert('Error al intentar descargar');
+        } finally {
+            setDownloadingId(null);
         }
     };
 
@@ -91,7 +118,7 @@ export default function CertificateHistory({ refreshHistory }: Props) {
                                 Nivel
                             </th>
                             <th className="pb-4 text-right text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                                Emisión
+                                Acción
                             </th>
                         </tr>
                     </thead>
@@ -124,8 +151,19 @@ export default function CertificateHistory({ refreshHistory }: Props) {
                                                 {cert.course_level}
                                             </span>
                                         </td>
-                                        <td className="py-4 pl-4 text-right text-[11px] font-bold text-gray-400 uppercase">
-                                            {new Date(cert.completion_date).toLocaleDateString('es-ES')}
+                                        <td className="py-4 pl-4 text-right">
+                                            <button
+                                                onClick={() => handleDownload(cert.id, cert.student_name)}
+                                                disabled={downloadingId === cert.id}
+                                                className="text-[#00bcd4] hover:text-[#00acc1] transition-colors p-2 rounded-lg hover:bg-[#00bcd4]/5 disabled:opacity-50"
+                                                title="Descargar PDF"
+                                            >
+                                                {downloadingId === cert.id ? (
+                                                    <div className="w-4 h-4 border-2 border-[#00bcd4]/30 border-t-[#00bcd4] rounded-full animate-spin" />
+                                                ) : (
+                                                    <FileText size={18} />
+                                                )}
+                                            </button>
                                         </td>
                                     </tr>
                                 ))
